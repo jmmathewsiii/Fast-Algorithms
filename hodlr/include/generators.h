@@ -1,9 +1,9 @@
 #ifndef GENERATORS_H
 #define GENERATORS_H
 
-#include <vector>
+#include "matrix.h"
 
-std::vector<double> generateLeafMatrix(int);
+SquareMatrix generateLeafMatrix(int);
 
 
 #endif // !GENERATORS_H

@@ -1,0 +1,19 @@
+#ifndef RANDOM_H
+#define RANDOM_H
+
+#include <random>
+
+class Random {
+public:
+    explicit Random(unsigned int seed);
+
+    double uniform();
+    double normal();
+
+private:
+    std::mt19937 generator;
+    std::uniform_real_distribution<double> u_dist;
+    std::normal_distribution<double> n_dist;
+};
+
+#endif

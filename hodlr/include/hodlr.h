@@ -3,10 +3,9 @@
 
 #include <vector>
 #include "node.h"
+#include "random.h"
 
 using VD = std::vector<double>;
-
-class Random;
 
 class HODLR_Matrix {
     private:
@@ -28,9 +27,17 @@ class HODLR_Matrix {
         std::size_t getLeafSize() const;
         std::size_t getNumLevels() const;
 
+        std::size_t getUPoolSize() const;
+        std::size_t getVTPoolSize() const;
+        std::size_t getLeafPoolSize() const;
+        std::size_t getTreeSize() const;
+
         void fillWithRandomData(Random&);
 
         void initializeTree();
+
+        void printMetaData();
+        void printTreeData();
 };
 
 #endif // !HODLR_H

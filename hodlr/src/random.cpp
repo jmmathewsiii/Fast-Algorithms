@@ -1,7 +1,6 @@
 #include "../include/random.h"
-#include "../include/random.h"
 
-Random::Random(unsigned int seed)
+Random::Random(std::uint64_t seed)
     : generator(seed),
       u_dist(0.0, 1.0),
       n_dist(0.0, 1.0)

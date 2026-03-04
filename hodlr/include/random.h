@@ -1,11 +1,12 @@
 #ifndef RANDOM_H
 #define RANDOM_H
 
+#include <cstdint>
 #include <random>
 
 class Random {
 public:
-    explicit Random(unsigned int seed);
+    explicit Random(std::uint64_t seed);
 
     double uniform();
     double normal();

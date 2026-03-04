@@ -1,0 +1,135 @@
+
+        Low rank: 2
+Leaf matrix size: 4
+      Leaf level: 3
+Full matrix size: 32
+     U Pool size: 192
+    VT Pool size: 192
+  Leaf Pool size: 128
+       Tree size: 15
+
+
+             Tree Idx: 0
+                Level: 0
+               isLeaf: 0
+Full Matrix Range: [0, 32)
+       Left Child Idx: 1
+      Right Child Idx: 2
+   U12 Pool Start Idx: 0
+   U21 Pool Start Idx: 32
+  VT12 Pool Start Idx: 0
+  VT21 Pool Start Idx: 32
+
+             Tree Idx: 1
+                Level: 1
+               isLeaf: 0
+Full Matrix Range: [0, 16)
+       Left Child Idx: 3
+      Right Child Idx: 4
+   U12 Pool Start Idx: 64
+   U21 Pool Start Idx: 80
+  VT12 Pool Start Idx: 64
+  VT21 Pool Start Idx: 80
+
+             Tree Idx: 2
+                Level: 1
+               isLeaf: 0
+Full Matrix Range: [16, 32)
+       Left Child Idx: 5
+      Right Child Idx: 6
+   U12 Pool Start Idx: 96
+   U21 Pool Start Idx: 112
+  VT12 Pool Start Idx: 96
+  VT21 Pool Start Idx: 112
+
+             Tree Idx: 3
+                Level: 2
+               isLeaf: 0
+Full Matrix Range: [0, 8)
+       Left Child Idx: 7
+      Right Child Idx: 8
+   U12 Pool Start Idx: 128
+   U21 Pool Start Idx: 136
+  VT12 Pool Start Idx: 128
+  VT21 Pool Start Idx: 136
+
+             Tree Idx: 4
+                Level: 2
+               isLeaf: 0
+Full Matrix Range: [8, 16)
+       Left Child Idx: 9
+      Right Child Idx: 10
+   U12 Pool Start Idx: 144
+   U21 Pool Start Idx: 152
+  VT12 Pool Start Idx: 144
+  VT21 Pool Start Idx: 152
+
+             Tree Idx: 5
+                Level: 2
+               isLeaf: 0
+Full Matrix Range: [16, 24)
+       Left Child Idx: 11
+      Right Child Idx: 12
+   U12 Pool Start Idx: 160
+   U21 Pool Start Idx: 168
+  VT12 Pool Start Idx: 160
+  VT21 Pool Start Idx: 168
+
+             Tree Idx: 6
+                Level: 2
+               isLeaf: 0
+Full Matrix Range: [24, 32)
+       Left Child Idx: 13
+      Right Child Idx: 14
+   U12 Pool Start Idx: 176
+   U21 Pool Start Idx: 184
+  VT12 Pool Start Idx: 176
+  VT21 Pool Start Idx: 184
+
+             Tree Idx: 7
+                Level: 3
+               isLeaf: 1
+Full Matrix Range: [0, 4)
+  Leaf Pool Start Idx: 0
+
+             Tree Idx: 8
+                Level: 3
+               isLeaf: 1
+Full Matrix Range: [4, 8)
+  Leaf Pool Start Idx: 16
+
+             Tree Idx: 9
+                Level: 3
+               isLeaf: 1
+Full Matrix Range: [8, 12)
+  Leaf Pool Start Idx: 32
+
+             Tree Idx: 10
+                Level: 3
+               isLeaf: 1
+Full Matrix Range: [12, 16)
+  Leaf Pool Start Idx: 48
+
+             Tree Idx: 11
+                Level: 3
+               isLeaf: 1
+Full Matrix Range: [16, 20)
+  Leaf Pool Start Idx: 64
+
+             Tree Idx: 12
+                Level: 3
+               isLeaf: 1
+Full Matrix Range: [20, 24)
+  Leaf Pool Start Idx: 80
+
+             Tree Idx: 13
+                Level: 3
+               isLeaf: 1
+Full Matrix Range: [24, 28)
+  Leaf Pool Start Idx: 96
+
+             Tree Idx: 14
+                Level: 3
+               isLeaf: 1
+Full Matrix Range: [28, 32)
+  Leaf Pool Start Idx: 112

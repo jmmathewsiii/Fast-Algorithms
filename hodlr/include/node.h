@@ -9,6 +9,8 @@ struct Node {
     std::size_t level; // Level 0 is full structure; L is smallest (leaves)
     std::size_t start; // Where this node would start in the full N x N matrix
     std::size_t end; // Where this node would end in the full N x N matrix (noninclusive)
+    std::size_t length = start - end;
+    std::size_t uv_length = length / static_cast<std::size_t>(2);
     bool isLeaf; // Is it a leaf node (dense n x n matrix)
 
     /* If NOT a leaf */

@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <iostream>
 #include <cmath>
 #include "../include/hodlr.h"
@@ -6,20 +7,28 @@ void printMetaData(HODLR_Matrix&);
 
 int main(int argc, char** argv)
 {
-   int n = std::stoi(argv[1]); // Size of leaf nodes: n x n
-   int k = std::stoi(argv[2]); // Rank of low-rank off-diagonal blocks
-   int L = std::stoi(argv[3]); // Number of levels
-   unsigned int seed = std::stoi(argv[4]); // random seed
 
-   Random rng(seed);
-   HODLR_Matrix hodlr(n, k, L);
-   hodlr.fillWithRandomData(rng);
-   hodlr.initializeTree();
+    std::size_t n = static_cast<std::size_t>(std::stoull(argv[1]));        // Size of leaf nodes: n x n
+    std::size_t k = static_cast<std::size_t>(std::stoull(argv[2]));        // Rank of low-rank blocks
+    std::size_t L = static_cast<std::size_t>(std::stoull(argv[3]));        // Level of leaf nodes
+    std::uint64_t seed = static_cast<std::uint64_t>(std::stoull(argv[4])); // Random seed
 
-   hodlr.printMetaData();
-   hodlr.printTreeData();
+    std::size_t N = (static_cast<std::size_t>(1) << L) * n;
 
+    Random rng(seed);
+    HODLR_Matrix hodlr(n, k, L);
+    hodlr.fillWithRandomData(rng);
+    hodlr.initializeTree();
 
-    return 0;
+    hodlr.printMetaData();
+    hodlr.printTreeData();
+
+    VD x(N);
+    for (std::size_t i = 0; i < N; ++i) {
+        x[i] = rng.uniform();
+    }
+    // VD b = hodlr.MatVec(x);
+
+     return 0;
 }
 

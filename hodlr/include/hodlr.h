@@ -34,6 +34,8 @@ class HODLR_Matrix {
 
         void fillWithRandomData(Random&);
 
+        VD MatVec(VD&);
+
         void initializeTree();
 
         void printMetaData();

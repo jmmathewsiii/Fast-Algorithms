@@ -33,6 +33,7 @@ class HODLR_Matrix {
         std::size_t getTreeSize() const;
 
         void fillWithRandomData(Random&);
+        VD createFullMatrix();
 
         VD MatVec(VD&);
 

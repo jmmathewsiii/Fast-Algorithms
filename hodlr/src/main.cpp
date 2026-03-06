@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <iostream>
 #include <cmath>
+#include <chrono>
 #include "../include/hodlr.h"
 
 void printMetaData(HODLR_Matrix&);
@@ -20,14 +21,40 @@ int main(int argc, char** argv)
     hodlr.fillWithRandomData(rng);
     hodlr.initializeTree();
 
-    hodlr.printMetaData();
-    hodlr.printTreeData();
+    // hodlr.printMetaData();
+    // hodlr.printTreeData();
 
     VD x(N);
     for (std::size_t i = 0; i < N; ++i) {
         x[i] = rng.uniform();
     }
-    // VD b = hodlr.MatVec(x);
+    auto hodlr_start = std::chrono::high_resolution_clock::now();
+    VD b = hodlr.MatVec(x);
+    auto hodlr_end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> hodlr_dur = hodlr_end - hodlr_start;
+
+    VD A = hodlr.createFullMatrix();
+    VD bp(N);
+    
+    auto normal_start = std::chrono::high_resolution_clock::now();
+    for (std::size_t i = 0; i < N; ++i)
+        for (std::size_t j = 0; j < N; ++j)
+            bp[i] += A[(i * N) + j] * x[j];
+    auto normal_end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> normal_dur = normal_end - normal_start;
+
+    VD err;
+    err.reserve(N);
+    for (std::size_t i = 0; i < N; ++i)
+        err.push_back(std::abs(b[i] - bp[i]));
+
+    double sum = 0;
+    for (std::size_t i = 0; i < N; ++i)
+        sum += err[i];
+
+    std::cout << "Sum of errs: " << sum << "\n";
+    std::cout << "HODLR MatVec Duration: " << hodlr_dur.count() << " ms.\n";
+    std::cout << "Normal MatVec Duration: " << normal_dur.count() << " ms.\n";
 
      return 0;
 }

@@ -28,6 +28,40 @@ void HODLR_Matrix::fillWithRandomData(Random &rng) {
     }
 }
 
+VD HODLR_Matrix::createFullMatrix() {
+    VD full_mat(N * N);
+    std::size_t leaf_start_idx = static_cast<std::size_t>(1) << L;
+    for (std::size_t tree_idx = 0; tree_idx < leaf_start_idx; ++tree_idx) {
+        Node c = tree[tree_idx];
+        VD UVT1(c.uv_length * c.uv_length);
+        VD UVT2(c.uv_length * c.uv_length);
+        for (std::size_t i = 0; i < c.uv_length; ++i) {
+            for (std::size_t j = 0; j < c.uv_length; ++j) {
+                for (std::size_t r = 0; r < k; ++r) {
+                    UVT1[(i * c.uv_length) + j] += 
+                        u_vals[c.U1 + (i * k) + r] * vt_vals[c.VT1 + (r * c.uv_length) + j];
+                    UVT2[(i * c.uv_length) + j] += 
+                        u_vals[c.U2 + (i * k) + r] * vt_vals[c.VT2 + (r * c.uv_length) + j];
+                }
+            }
+        }
+        for (std::size_t i = 0; i < c.uv_length; ++i) {
+            for (std::size_t j = 0; j < c.uv_length; ++j) {
+                full_mat[(c.start * N) + c.start + c.uv_length + (i * N) + j] = UVT1[(i * c.uv_length) + j];
+                full_mat[(c.start * N) + c.start + (c.uv_length * N) + (i * N) + j] = UVT2[(i * c.uv_length) + j];
+            }
+        }
+    }
+    for (std::size_t tree_idx = leaf_start_idx; tree_idx < tree.size(); ++tree_idx) {
+        Node c = tree[tree_idx];
+        for (std::size_t i = 0; i < n; ++i)
+            for (std::size_t j = 0; j < n; ++j)
+                full_mat[(c.start * N) + c.start + ((i * N) + j)] = leaf_vals[c.A + ((i * n) + j)];
+    }
+
+    return full_mat;
+}
+
 VD HODLR_Matrix::MatVec(VD &x) {
     if (x.size() != N) {
         std::cerr << "HODLR Matrix Size: " << N << " x " << N
@@ -38,7 +72,7 @@ VD HODLR_Matrix::MatVec(VD &x) {
 
     VD b(N);
     std::size_t tree_size = tree.size();
-    std::size_t leaf_start_idx = tree_size / static_cast<std::size_t>(2);
+    std::size_t leaf_start_idx = static_cast<std::size_t>(1) << L;
 
     for (std::size_t tree_idx = 0; tree_idx < leaf_start_idx; ++tree_idx) {
        Node c = tree.at(tree_idx); 
@@ -52,8 +86,8 @@ VD HODLR_Matrix::MatVec(VD &x) {
 
        for (std::size_t i = 0; i < k; ++i) {
            for (std::size_t j = 0; j < c.uv_length; ++j) {
-               tmp1[i] += vt_vals[c.VT1 + ((i * c.uv_length) + j)] * x[/* x1_start_idx + j */ 0];
-               tmp2[i] += vt_vals[c.VT2 + ((i * c.uv_length) + j)] * x[/* x2_start_idx + j */ 0];
+               tmp1[i] += vt_vals[c.VT1 + ((i * c.uv_length) + j)] * x[x1_start_idx + j];
+               tmp2[i] += vt_vals[c.VT2 + ((i * c.uv_length) + j)] * x[x2_start_idx + j];
            }
        }
        for (std::size_t i = 0; i < c.uv_length; ++i) {
@@ -67,8 +101,8 @@ VD HODLR_Matrix::MatVec(VD &x) {
     for (std::size_t tree_idx = leaf_start_idx; tree_idx < tree_size; ++tree_idx) {
         Node c = tree.at(tree_idx);
         for (std::size_t i = 0; i < n; ++i) 
-            for (std::size_t j = 0; i < n; ++j)
-                b[i] += leaf_vals[c.A + ((i * n) + j)] * x[j];
+            for (std::size_t j = 0; j < n; ++j)
+                b[c.start + i] += leaf_vals[c.A + ((i * n) + j)] * x[c.start + j];
     }
 
     return b;
@@ -90,6 +124,8 @@ void HODLR_Matrix::initializeTree() {
             node.level = l;
             node.start = it * mat_block_size;
             node.end = node.start + mat_block_size;
+            node.length = mat_block_size;
+            node.uv_length = mat_block_size / static_cast<std::size_t>(2);
             node.isLeaf = false;
 
             node.left_child = (idx * 2) + 1;

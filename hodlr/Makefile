@@ -48,7 +48,7 @@ cleanall: clean
 
 # Run the program (example - modify arguments as needed)
 run: all
-	./$(TARGET) 4 2 3 12345 > $(OUT_DIR)/output.txt
+	./$(TARGET) 8 4 8 12345
 
 # Phony targets
 .PHONY: all clean cleanall run

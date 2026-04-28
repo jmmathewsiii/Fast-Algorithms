@@ -48,7 +48,7 @@ cleanall: clean
 
 # Run the program (example - modify arguments as needed)
 run: all
-	./$(TARGET) 8 4 8 12345
+	./$(TARGET) 8 4 10 12345
 
 # Phony targets
 .PHONY: all clean cleanall run

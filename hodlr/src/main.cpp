@@ -56,6 +56,6 @@ int main(int argc, char** argv)
     std::cout << "HODLR MatVec Duration: " << hodlr_dur.count() << " ms.\n";
     std::cout << "Normal MatVec Duration: " << normal_dur.count() << " ms.\n";
 
-     return 0;
+    return 0;
 }
 

@@ -1,4 +1,16 @@
-#include "integrator.h"
+#ifndef FORCE_CPU_H
+#define FORCE_CPU_H
+
 #include "star.h"
 
-void calculate_accelerations(Stars&, double eps);
+class QuadTree;
+
+namespace Direct {
+    void calculate_accelerations(Stars& s, double eps);
+}
+
+namespace BH {
+    void calculate_accelerations(Stars& s, double eps, QuadTree& tree, double theta);
+}
+
+#endif // !FORCE_CPU_H

@@ -26,5 +26,13 @@ struct Stars {
     }
 };
 
+struct DeviceStars {
+    uint32_t N;
+    double *m;
+    double *x, *y;
+    double *vx, *vy;
+    double *ax, *ay;
+};
+
 
 #endif // !STAR_H

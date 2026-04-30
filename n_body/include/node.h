@@ -1,3 +1,5 @@
+#ifndef NODE_H
+#define NODE_H
 #include <cstddef>
 #include <cstdint>
 #include "star.h"
@@ -19,3 +21,4 @@ struct Node
 
 };
 
+#endif // !NODE_H

@@ -2,7 +2,7 @@
 #include "../../include/star.h"
 #include <cmath>
 
-void calculate_accelerations(Stars &s, double eps)
+void Direct::calculate_accelerations(Stars &s, double eps)
 {
     std::size_t N = s.size();
     double eps_sq = eps * eps;

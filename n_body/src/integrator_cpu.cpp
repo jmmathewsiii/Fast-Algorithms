@@ -2,6 +2,7 @@
 #include "../include/plotter.h"
 #include "../include/force_cpu.h"
 #include "../include/quadtree_cpu.h"
+#include <chrono>
 #include <iostream>
 #include <cmath>
 
@@ -34,6 +35,8 @@ void kick(Stars &s, double dt)
 void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
                       const std::string& plotname)
 {
+    auto t_start = std::chrono::steady_clock::now();
+
     Direct::calculate_accelerations(s, eps);
 
     Plotter::Animator anim = Plotter::animator_begin(plotname);
@@ -57,6 +60,10 @@ void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
     }
 
     Plotter::animator_end(anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
+
+    double total = std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - t_start).count();
+    std::cout << "[direct] Total run time: " << total << " s\n";
 }
 
 void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
@@ -64,6 +71,9 @@ void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
 {
     constexpr double theta = 0.5;
     QuadTree tree(&s);
+
+    BH::reset_timers();
+    auto t_start = std::chrono::steady_clock::now();
 
     BH::calculate_accelerations(s, eps, tree, theta);
 
@@ -92,4 +102,12 @@ void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
 
     Plotter::animator_end(anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
     Plotter::tree_animator_end(tree_anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
+
+    double total = std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - t_start).count();
+    double build = BH::tree_build_seconds();
+    double force = BH::force_compute_seconds();
+    std::cout << "[bh]     Total run time:   " << total << " s\n"
+              << "[bh]     Tree build time:  " << build << " s\n"
+              << "[bh]     Force calc time:  " << force << " s\n";
 }

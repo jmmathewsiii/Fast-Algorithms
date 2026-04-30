@@ -1,0 +1,9 @@
+set title 'initial' font ', 14'
+set tics font ', 14'
+set size square
+set xrange [-1.354:1.34448]
+set yrange [-1.41258:1.35199]
+set xlabel 'x'
+set ylabel 'y'
+unset key
+plot '../output/initial.plt' with points pt 7 ps 0.5 lc rgb 'black'

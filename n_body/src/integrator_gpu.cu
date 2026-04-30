@@ -1,6 +1,7 @@
 #include "../include/integrator.h"
 #include "../include/force_gpu.h"
 #include "../include/plotter.h"
+#include <chrono>
 #include <cstdint>
 #include <iostream>
 #include <cmath>
@@ -48,6 +49,8 @@ __global__ void kick(DeviceStars s, double dt)
 void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
                       const std::string& plotname)
 {
+    auto t_start = std::chrono::steady_clock::now();
+
     DeviceStars d;
     uint32_t N = s.size();
     d.N = N;
@@ -101,11 +104,17 @@ void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
     }
 
     Plotter::animator_end(anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
-    
+
+    CUDA_CHECK(cudaDeviceSynchronize());
+
     CUDA_CHECK(cudaFree(d.m));
     CUDA_CHECK(cudaFree(d.x));  CUDA_CHECK(cudaFree(d.y));
     CUDA_CHECK(cudaFree(d.vx)); CUDA_CHECK(cudaFree(d.vy));
     CUDA_CHECK(cudaFree(d.ax)); CUDA_CHECK(cudaFree(d.ay));
+
+    double total = std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - t_start).count();
+    std::cout << "[direct] Total run time: " << total << " s\n";
 }
 
 void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,

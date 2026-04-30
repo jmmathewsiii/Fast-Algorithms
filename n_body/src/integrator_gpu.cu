@@ -47,8 +47,9 @@ __global__ void kick(DeviceStars s, double dt)
 }  // namespace
 
 void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
-                      const std::string& plotname)
+                      const std::string& plotname, bool plot)
 {
+    Direct::reset_timers();
     auto t_start = std::chrono::steady_clock::now();
 
     DeviceStars d;
@@ -76,8 +77,11 @@ void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
 
     Direct::calculate_accelerations(d, eps);
 
-    Plotter::Animator anim = Plotter::animator_begin(plotname);
-    Plotter::animator_add_frame(anim, s);
+    Plotter::Animator anim;
+    if (plot) {
+        anim = Plotter::animator_begin(plotname);
+        Plotter::animator_add_frame(anim, s);
+    }
 
     constexpr int block_size = 32;
     const int num_blocks = (N + block_size - 1) / block_size;
@@ -88,22 +92,30 @@ void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
         Direct::calculate_accelerations(d, eps);
         kick<<<num_blocks, block_size>>>(d, dt);
 
-        if (i % 10 == 9)
+        if (plot && i % 10 == 9)
         {
             CUDA_CHECK(cudaMemcpy(s.x.data(), d.x, N * sizeof(double), cudaMemcpyDeviceToHost));
             CUDA_CHECK(cudaMemcpy(s.y.data(), d.y, N * sizeof(double), cudaMemcpyDeviceToHost));
             Plotter::animator_add_frame(anim, s);
-            if (i % 200 == 199)
-            {
-                CUDA_CHECK(cudaMemcpy(s.vx.data(), d.vx, N * sizeof(double), cudaMemcpyDeviceToHost));
-                CUDA_CHECK(cudaMemcpy(s.vy.data(), d.vy, N * sizeof(double), cudaMemcpyDeviceToHost));
-                double energy = total_energy(s, eps);
-                std::cout << "[direct] Total Energy at step " << i + 1 << ": " << energy << "\n";
-            }
+        }
+        if (i % 200 == 199)
+        {
+            CUDA_CHECK(cudaMemcpy(s.x.data(), d.x, N * sizeof(double), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(s.y.data(), d.y, N * sizeof(double), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(s.vx.data(), d.vx, N * sizeof(double), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(s.vy.data(), d.vy, N * sizeof(double), cudaMemcpyDeviceToHost));
+            double energy = total_energy(s, eps);
+            std::cout << "[direct] Total Energy at step " << i + 1 << ": " << energy << "\n";
         }
     }
 
-    Plotter::animator_end(anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
+    // Pull final positions back so save_final_positions has them.
+    CUDA_CHECK(cudaMemcpy(s.x.data(), d.x, N * sizeof(double), cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(s.y.data(), d.y, N * sizeof(double), cudaMemcpyDeviceToHost));
+
+    if (plot) {
+        Plotter::animator_end(anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
+    }
 
     CUDA_CHECK(cudaDeviceSynchronize());
 
@@ -114,9 +126,12 @@ void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
 
     double total = std::chrono::duration<double>(
         std::chrono::steady_clock::now() - t_start).count();
-    std::cout << "[direct] Total run time: " << total << " s\n";
+    double force = Direct::force_compute_seconds();
+    std::cout << "[direct] Total run time:  " << total << " s\n"
+              << "[direct] Force calc time: " << force << " s\n";
 }
 
 void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
-                  const std::string& plotname, const std::string& treename)
+                  const std::string& plotname, const std::string& treename,
+                  bool plot)
 {std::cerr << "Not implemented yet.\n";}

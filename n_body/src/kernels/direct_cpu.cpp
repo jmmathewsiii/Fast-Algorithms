@@ -1,9 +1,19 @@
 #include "../../include/force_cpu.h"
 #include "../../include/star.h"
+#include <chrono>
 #include <cmath>
+
+namespace {
+    double g_force_seconds = 0.0;
+}
+
+void Direct::reset_timers() { g_force_seconds = 0.0; }
+double Direct::force_compute_seconds() { return g_force_seconds; }
 
 void Direct::calculate_accelerations(Stars &s, double eps)
 {
+    auto t0 = std::chrono::steady_clock::now();
+
     std::size_t N = s.size();
     double eps_sq = eps * eps;
 
@@ -25,4 +35,7 @@ void Direct::calculate_accelerations(Stars &s, double eps)
             s.ax[i] -= s.m[j] * ax_new;    s.ay[i] -= s.m[j] * ay_new;
             s.ax[j] += s.m[i] * ax_new;    s.ay[j] += s.m[i] * ay_new;
         }
+
+    g_force_seconds += std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - t0).count();
 }

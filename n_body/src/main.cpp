@@ -14,6 +14,9 @@ int main()
 {
     const std::string backend = BACKEND_TAG;
 
+    // Set to false for clean timing runs (no per-frame file I/O).
+    const bool plot = false;
+
     Stars stars;
 
     int N = 10000;
@@ -26,13 +29,13 @@ int main()
 
     initialize(stars, N, sigma_pos, rng);
 
-    Plotter::plot_positions(stars, "initial");
+    if (plot) Plotter::plot_positions(stars, "initial");
 
     // Snapshot initial conditions so all runs see the same start.
     Stars stars_initial = stars;
 
     std::cout << "=== Direct O(N^2) run [" << backend << "] ===\n";
-    Direct::simulate(stars, n_iter, dt, epsilon, "direct");
+    Direct::simulate(stars, n_iter, dt, epsilon, "direct", plot);
     save_final_positions(stars, "direct_" + backend);
 
     // If this is the serial run, this IS the baseline; otherwise compare to it.
@@ -50,7 +53,7 @@ int main()
     stars = stars_initial;
 
     std::cout << "=== Barnes-Hut run [" << backend << "] ===\n";
-    BH::simulate(stars, n_iter, dt, epsilon, "bh", "bh_tree");
+    BH::simulate(stars, n_iter, dt, epsilon, "bh", "bh_tree", plot);
     save_final_positions(stars, "bh_" + backend);
 
     {

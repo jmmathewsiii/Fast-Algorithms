@@ -1,5 +1,6 @@
 #include "../../include/force_gpu.h"
 #include "../../include/quadtree_gpu.h"
+#include <chrono>
 #include <cstdlib>
 #include <cstdio>
 
@@ -47,10 +48,22 @@ __global__ void direct_kernel(DeviceStars s, double eps)
     s.ay[star_idx] = ay_sum;
 }
 
+namespace {
+    double g_force_seconds = 0.0;
+}
+
+void Direct::reset_timers() { g_force_seconds = 0.0; }
+double Direct::force_compute_seconds() { return g_force_seconds; }
+
 void Direct::calculate_accelerations(DeviceStars s, double eps)
 {
     const static int block_size = 32;
     const int num_blocks = (s.N + block_size - 1) / block_size;
+
+    auto t0 = std::chrono::steady_clock::now();
     direct_kernel<<<num_blocks, block_size>>>(s, eps);
     CUDA_CHECK(cudaGetLastError());
+    CUDA_CHECK(cudaDeviceSynchronize());
+    g_force_seconds += std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - t0).count();
 }

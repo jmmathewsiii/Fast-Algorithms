@@ -7,6 +7,9 @@ class QuadTree;
 
 namespace Direct {
     void calculate_accelerations(Stars& s, double eps);
+
+    void reset_timers();
+    double force_compute_seconds();
 }
 
 namespace BH {

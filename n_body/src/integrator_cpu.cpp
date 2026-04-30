@@ -33,14 +33,18 @@ void kick(Stars &s, double dt)
 }  // namespace
 
 void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
-                      const std::string& plotname)
+                      const std::string& plotname, bool plot)
 {
+    Direct::reset_timers();
     auto t_start = std::chrono::steady_clock::now();
 
     Direct::calculate_accelerations(s, eps);
 
-    Plotter::Animator anim = Plotter::animator_begin(plotname);
-    Plotter::animator_add_frame(anim, s);
+    Plotter::Animator anim;
+    if (plot) {
+        anim = Plotter::animator_begin(plotname);
+        Plotter::animator_add_frame(anim, s);
+    }
 
     for (std::size_t i = 0; i < n_iter; ++i)
     {
@@ -48,7 +52,7 @@ void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
         Direct::calculate_accelerations(s, eps);
         kick(s, dt);
 
-        if (i % 10 == 9)
+        if (plot && i % 10 == 9)
         {
             Plotter::animator_add_frame(anim, s);
         }
@@ -59,15 +63,20 @@ void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
         }
     }
 
-    Plotter::animator_end(anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
+    if (plot) {
+        Plotter::animator_end(anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
+    }
 
     double total = std::chrono::duration<double>(
         std::chrono::steady_clock::now() - t_start).count();
-    std::cout << "[direct] Total run time: " << total << " s\n";
+    double force = Direct::force_compute_seconds();
+    std::cout << "[direct] Total run time:  " << total << " s\n"
+              << "[direct] Force calc time: " << force << " s\n";
 }
 
 void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
-                  const std::string& plotname, const std::string& treename)
+                  const std::string& plotname, const std::string& treename,
+                  bool plot)
 {
     constexpr double theta = 0.5;
     QuadTree tree(&s);
@@ -77,10 +86,14 @@ void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
 
     BH::calculate_accelerations(s, eps, tree, theta);
 
-    Plotter::Animator anim = Plotter::animator_begin(plotname);
-    Plotter::TreeAnimator tree_anim = Plotter::tree_animator_begin(treename);
-    Plotter::animator_add_frame(anim, s);
-    Plotter::tree_animator_add_frame(tree_anim, tree, s);
+    Plotter::Animator anim;
+    Plotter::TreeAnimator tree_anim;
+    if (plot) {
+        anim = Plotter::animator_begin(plotname);
+        tree_anim = Plotter::tree_animator_begin(treename);
+        Plotter::animator_add_frame(anim, s);
+        Plotter::tree_animator_add_frame(tree_anim, tree, s);
+    }
 
     for (std::size_t i = 0; i < n_iter; ++i)
     {
@@ -88,7 +101,7 @@ void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
         BH::calculate_accelerations(s, eps, tree, theta);
         kick(s, dt);
 
-        if (i % 10 == 9)
+        if (plot && i % 10 == 9)
         {
             Plotter::animator_add_frame(anim, s);
             Plotter::tree_animator_add_frame(tree_anim, tree, s);
@@ -100,8 +113,10 @@ void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
         }
     }
 
-    Plotter::animator_end(anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
-    Plotter::tree_animator_end(tree_anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
+    if (plot) {
+        Plotter::animator_end(anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
+        Plotter::tree_animator_end(tree_anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
+    }
 
     double total = std::chrono::duration<double>(
         std::chrono::steady_clock::now() - t_start).count();

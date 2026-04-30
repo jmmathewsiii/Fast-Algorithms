@@ -1,11 +1,19 @@
 #include "../include/initialize.h"
 #include "../include/plotter.h"
 #include "../include/integrator.h"
+#include "../include/validate.h"
 #include <cstdint>
 #include <iostream>
+#include <string>
+
+#ifndef BACKEND_TAG
+#define BACKEND_TAG "unknown"
+#endif
 
 int main()
 {
+    const std::string backend = BACKEND_TAG;
+
     Stars stars;
 
     int N = 10000;
@@ -17,27 +25,43 @@ int main()
     Random rng(seed);
 
     initialize(stars, N, sigma_pos, rng);
-    // stars.m.push_back(10.);
-    // stars.x.push_back(3.);
-    // stars.y.push_back(3.);
-    // stars.vx.push_back(0.);
-    // stars.vy.push_back(0.);
-    // stars.ax.push_back(0.);
-    // stars.ay.push_back(0.);
 
     Plotter::plot_positions(stars, "initial");
 
-    // Snapshot initial conditions so both runs see the same start.
+    // Snapshot initial conditions so all runs see the same start.
     Stars stars_initial = stars;
 
-    // std::cout << "=== Direct O(N^2) run ===\n";
-    // Direct::simulate(stars, n_iter, dt, epsilon, "direct");
+    std::cout << "=== Direct O(N^2) run [" << backend << "] ===\n";
+    Direct::simulate(stars, n_iter, dt, epsilon, "direct");
+    save_final_positions(stars, "direct_" + backend);
+
+    // If this is the serial run, this IS the baseline; otherwise compare to it.
+    if (backend != "serial") {
+        Stars baseline;
+        if (load_final_positions(baseline, "direct_serial")) {
+            compare_positions(baseline, stars, "direct-" + backend);
+        } else {
+            std::cout << "[validate] no direct_serial baseline found; "
+                         "run the serial binary first.\n";
+        }
+    }
 
     // Restore initial conditions for the BH run.
     stars = stars_initial;
 
-    std::cout << "=== Barnes-Hut run ===\n";
+    std::cout << "=== Barnes-Hut run [" << backend << "] ===\n";
     BH::simulate(stars, n_iter, dt, epsilon, "bh", "bh_tree");
+    save_final_positions(stars, "bh_" + backend);
+
+    {
+        Stars baseline;
+        if (load_final_positions(baseline, "direct_serial")) {
+            compare_positions(baseline, stars, "bh-" + backend);
+        } else {
+            std::cout << "[validate] no direct_serial baseline found; "
+                         "run the serial binary first.\n";
+        }
+    }
 
     return 0;
 }

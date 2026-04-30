@@ -16,11 +16,11 @@ OUT_DIR    = output
 SCRIPT_DIR = scripts
 
 # Shared objects (used by all binaries)
-COMMON_OBJS = $(OBJ_DIR)/main.o \
-              $(OBJ_DIR)/random.o \
+COMMON_OBJS = $(OBJ_DIR)/random.o \
               $(OBJ_DIR)/initialize.o \
               $(OBJ_DIR)/plotter.o \
-              $(OBJ_DIR)/energy.o
+              $(OBJ_DIR)/energy.o \
+              $(OBJ_DIR)/validate.o
 
 # Targets
 TARGET_SERIAL = $(BIN_DIR)/serial
@@ -33,19 +33,27 @@ cuda:   $(TARGET_CUDA)
 
 # ===== Link rules =====
 # The serial binary links both Direct and BH kernels and runs both back-to-back.
-$(TARGET_SERIAL): $(COMMON_OBJS) \
+$(TARGET_SERIAL): $(OBJ_DIR)/main.serial.o $(COMMON_OBJS) \
                   $(OBJ_DIR)/integrator_cpu.o \
                   $(OBJ_DIR)/quadtree_cpu.o \
                   $(KOBJ_DIR)/direct_cpu.o \
                   $(KOBJ_DIR)/bh_cpu.o | $(BIN_DIR)
 	$(CXX) $(LDFLAGS) $^ -o $@
 
-$(TARGET_CUDA): $(COMMON_OBJS) \
+$(TARGET_CUDA): $(OBJ_DIR)/main.cuda.o $(COMMON_OBJS) \
                 $(OBJ_DIR)/integrator_gpu.o \
+                $(OBJ_DIR)/quadtree_cpu.o \
                 $(OBJ_DIR)/quadtree_gpu.o \
                 $(KOBJ_DIR)/direct_gpu.o \
                 $(KOBJ_DIR)/bh_gpu.o | $(BIN_DIR)
 	$(NVCC) $^ -o $@
+
+# ===== Per-binary main.o (different BACKEND_TAG) =====
+$(OBJ_DIR)/main.serial.o: $(SRC_DIR)/main.cpp | $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -DBACKEND_TAG=\"serial\" -c $< -o $@
+
+$(OBJ_DIR)/main.cuda.o: $(SRC_DIR)/main.cpp | $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -DBACKEND_TAG=\"cuda\" -c $< -o $@
 
 # ===== Compile rules =====
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
@@ -98,7 +106,9 @@ run_all: run_serial run_cuda
         run_serial run_cuda run_all
 
 # ===== Header dependencies =====
-$(OBJ_DIR)/main.o:            $(INC_DIR)/star.h $(INC_DIR)/random.h $(INC_DIR)/initialize.h $(INC_DIR)/plotter.h $(INC_DIR)/integrator.h
+$(OBJ_DIR)/main.serial.o:     $(INC_DIR)/star.h $(INC_DIR)/random.h $(INC_DIR)/initialize.h $(INC_DIR)/plotter.h $(INC_DIR)/integrator.h $(INC_DIR)/validate.h
+$(OBJ_DIR)/main.cuda.o:       $(INC_DIR)/star.h $(INC_DIR)/random.h $(INC_DIR)/initialize.h $(INC_DIR)/plotter.h $(INC_DIR)/integrator.h $(INC_DIR)/validate.h
+$(OBJ_DIR)/validate.o:        $(INC_DIR)/validate.h $(INC_DIR)/star.h
 $(OBJ_DIR)/random.o:          $(INC_DIR)/random.h
 $(OBJ_DIR)/initialize.o:      $(INC_DIR)/star.h $(INC_DIR)/random.h $(INC_DIR)/initialize.h
 $(OBJ_DIR)/plotter.o:         $(INC_DIR)/star.h $(INC_DIR)/plotter.h $(INC_DIR)/quadtree_cpu.h $(INC_DIR)/node.h

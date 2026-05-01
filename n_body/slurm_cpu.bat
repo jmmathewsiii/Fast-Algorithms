@@ -14,8 +14,8 @@ cd $SLURM_SUBMIT_DIR
 mkdir -p output output/lyapunov scripts scripts/lyapunov logs
 
 # Edit N / n_iter as needed. Mode is "speed" so timings are printed.
-N=10000
-NITER=4000
+N=1000
+NITER=1000
 
 # Run direct first so BH has a baseline to validate against.
 ./bin/serial_direct <<EOF

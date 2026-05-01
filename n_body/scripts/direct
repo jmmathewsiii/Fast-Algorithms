@@ -4,7 +4,7 @@ set yrange [-4:4]
 set xlabel 'x'
 set ylabel 'y'
 unset key
-do for [i=0:400] {
+do for [i=0:100] {
     set title sprintf('direct  frame %d', i)
     plot sprintf('../output/direct_%05d.plt', i) with points pt 7 ps 0.5 lc rgb 'black'
     pause 0.005

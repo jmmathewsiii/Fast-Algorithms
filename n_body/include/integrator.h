@@ -7,13 +7,17 @@
 
 namespace Direct {
     void simulate(Stars& s, std::size_t n_iter, double dt, double eps,
-                  const std::string& plotname, bool plot = true);
+                  const std::string& plotname, bool plot = true,
+                  const std::string& snapshot_tag = "",
+                  std::size_t snapshot_stride = 0);
 }
 
 namespace BH {
     void simulate(Stars& s, std::size_t n_iter, double dt, double eps,
                   const std::string& plotname, const std::string& treename,
-                  bool plot = true);
+                  bool plot = true,
+                  const std::string& snapshot_tag = "",
+                  std::size_t snapshot_stride = 0);
 }
 
 double total_energy(const Stars& s, double eps);

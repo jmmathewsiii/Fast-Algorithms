@@ -47,7 +47,9 @@ __global__ void kick(DeviceStars s, double dt)
 }  // namespace
 
 void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
-                      const std::string& plotname, bool plot)
+                      const std::string& plotname, bool plot,
+                      const std::string& /*snapshot_tag*/,
+                      std::size_t /*snapshot_stride*/)
 {
     Direct::reset_timers();
     auto t_start = std::chrono::steady_clock::now();
@@ -98,7 +100,7 @@ void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
             CUDA_CHECK(cudaMemcpy(s.y.data(), d.y, N * sizeof(double), cudaMemcpyDeviceToHost));
             Plotter::animator_add_frame(anim, s);
         }
-        if (i % 200 == 199)
+        if (!plot && i % 200 == 199)
         {
             CUDA_CHECK(cudaMemcpy(s.x.data(), d.x, N * sizeof(double), cudaMemcpyDeviceToHost));
             CUDA_CHECK(cudaMemcpy(s.y.data(), d.y, N * sizeof(double), cudaMemcpyDeviceToHost));
@@ -124,14 +126,18 @@ void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
     CUDA_CHECK(cudaFree(d.vx)); CUDA_CHECK(cudaFree(d.vy));
     CUDA_CHECK(cudaFree(d.ax)); CUDA_CHECK(cudaFree(d.ay));
 
-    double total = std::chrono::duration<double>(
-        std::chrono::steady_clock::now() - t_start).count();
-    double force = Direct::force_compute_seconds();
-    std::cout << "[direct] Total run time:  " << total << " s\n"
-              << "[direct] Force calc time: " << force << " s\n";
+    if (!plot) {
+        double total = std::chrono::duration<double>(
+            std::chrono::steady_clock::now() - t_start).count();
+        double force = Direct::force_compute_seconds();
+        std::cout << "[direct] Total run time:  " << total << " s\n"
+                  << "[direct] Force calc time: " << force << " s\n";
+    }
 }
 
 void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
                   const std::string& plotname, const std::string& treename,
-                  bool plot)
+                  bool plot,
+                  const std::string& /*snapshot_tag*/,
+                  std::size_t /*snapshot_stride*/)
 {std::cerr << "Not implemented yet.\n";}

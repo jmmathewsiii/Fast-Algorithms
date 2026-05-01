@@ -2,6 +2,7 @@
 #include "../include/plotter.h"
 #include "../include/force_cpu.h"
 #include "../include/quadtree_cpu.h"
+#include "../include/validate.h"
 #include <chrono>
 #include <iostream>
 #include <cmath>
@@ -33,7 +34,9 @@ void kick(Stars &s, double dt)
 }  // namespace
 
 void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
-                      const std::string& plotname, bool plot)
+                      const std::string& plotname, bool plot,
+                      const std::string& snapshot_tag,
+                      std::size_t snapshot_stride)
 {
     Direct::reset_timers();
     auto t_start = std::chrono::steady_clock::now();
@@ -46,6 +49,9 @@ void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
         Plotter::animator_add_frame(anim, s);
     }
 
+    const bool snap = snapshot_stride > 0 && !snapshot_tag.empty();
+    if (snap) save_snapshot(s, snapshot_tag, 0);
+
     for (std::size_t i = 0; i < n_iter; ++i)
     {
         kick_drift(s, dt);
@@ -56,10 +62,14 @@ void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
         {
             Plotter::animator_add_frame(anim, s);
         }
-        if (i % 200 == 199)
+        if (!plot && i % 200 == 199)
         {
             double energy = total_energy(s, eps);
             std::cout << "[direct] Total Energy at step " << i + 1 << ": " << energy << "\n";
+        }
+        if (snap && (i + 1) % snapshot_stride == 0)
+        {
+            save_snapshot(s, snapshot_tag, i + 1);
         }
     }
 
@@ -67,16 +77,20 @@ void Direct::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
         Plotter::animator_end(anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
     }
 
-    double total = std::chrono::duration<double>(
-        std::chrono::steady_clock::now() - t_start).count();
-    double force = Direct::force_compute_seconds();
-    std::cout << "[direct] Total run time:  " << total << " s\n"
-              << "[direct] Force calc time: " << force << " s\n";
+    if (!plot) {
+        double total = std::chrono::duration<double>(
+            std::chrono::steady_clock::now() - t_start).count();
+        double force = Direct::force_compute_seconds();
+        std::cout << "[direct] Total run time:  " << total << " s\n"
+                  << "[direct] Force calc time: " << force << " s\n";
+    }
 }
 
 void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
                   const std::string& plotname, const std::string& treename,
-                  bool plot)
+                  bool plot,
+                  const std::string& snapshot_tag,
+                  std::size_t snapshot_stride)
 {
     constexpr double theta = 0.5;
     QuadTree tree(&s);
@@ -95,6 +109,9 @@ void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
         Plotter::tree_animator_add_frame(tree_anim, tree, s);
     }
 
+    const bool snap = snapshot_stride > 0 && !snapshot_tag.empty();
+    if (snap) save_snapshot(s, snapshot_tag, 0);
+
     for (std::size_t i = 0; i < n_iter; ++i)
     {
         kick_drift(s, dt);
@@ -106,10 +123,14 @@ void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
             Plotter::animator_add_frame(anim, s);
             Plotter::tree_animator_add_frame(tree_anim, tree, s);
         }
-        if (i % 200 == 199)
+        if (!plot && i % 200 == 199)
         {
             double energy = total_energy(s, eps);
             std::cout << "[bh]     Total Energy at step " << i + 1 << ": " << energy << "\n";
+        }
+        if (snap && (i + 1) % snapshot_stride == 0)
+        {
+            save_snapshot(s, snapshot_tag, i + 1);
         }
     }
 
@@ -118,11 +139,13 @@ void BH::simulate(Stars &s, std::size_t n_iter, double dt, double eps,
         Plotter::tree_animator_end(tree_anim, /*half_range=*/4.0, /*pause_sec=*/0.005);
     }
 
-    double total = std::chrono::duration<double>(
-        std::chrono::steady_clock::now() - t_start).count();
-    double build = BH::tree_build_seconds();
-    double force = BH::force_compute_seconds();
-    std::cout << "[bh]     Total run time:   " << total << " s\n"
-              << "[bh]     Tree build time:  " << build << " s\n"
-              << "[bh]     Force calc time:  " << force << " s\n";
+    if (!plot) {
+        double total = std::chrono::duration<double>(
+            std::chrono::steady_clock::now() - t_start).count();
+        double build = BH::tree_build_seconds();
+        double force = BH::force_compute_seconds();
+        std::cout << "[bh]     Total run time:   " << total << " s\n"
+                  << "[bh]     Tree build time:  " << build << " s\n"
+                  << "[bh]     Force calc time:  " << force << " s\n";
+    }
 }
